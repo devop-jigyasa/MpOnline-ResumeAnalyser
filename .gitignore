@@ -1,0 +1,22 @@
+## Visual Studio / Dotnet ignores
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+
+## Environment / Secrets
+appsettings.*.local.json
+*.local.json
+.env
+
+## OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
