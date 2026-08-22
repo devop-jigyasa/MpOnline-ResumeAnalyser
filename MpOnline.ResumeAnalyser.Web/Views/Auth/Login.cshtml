@@ -1,0 +1,39 @@
+@model MpOnline.ResumeAnalyser.Web.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4 mt-4">
+                <div class="card-header bg-dark-slate text-white text-center py-4 rounded-top-4 border-0">
+                    <h3 class="mb-1 fw-bold"><i class="bi bi-shield-lock me-2 text-indigo-400"></i>Welcome Back</h3>
+                    <p class="text-slate-300 small mb-0">Sign in to your MPOnline ResumeAnalyser workspace</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-3 py-2 small text-center">@ViewBag.Error</div>
+                    }
+                    <form asp-action="Login" method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" required />
+                            <label asp-for="Email">Email Address</label>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Password" required />
+                            <label asp-for="Password">Password</label>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <button type="submit" class="btn btn-indigo btn-lg w-100 rounded-pill fw-bold">Sign In</button>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3 bg-light rounded-bottom-4 border-0">
+                    <span class="text-muted small">Don't have an account? <a asp-action="Register" class="text-indigo-600 fw-bold">Create Account</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

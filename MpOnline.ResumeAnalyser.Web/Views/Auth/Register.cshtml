@@ -1,0 +1,55 @@
+@model MpOnline.ResumeAnalyser.Web.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4 mt-4">
+                <div class="card-header bg-dark-slate text-white text-center py-4 rounded-top-4 border-0">
+                    <h3 class="mb-1 fw-bold"><i class="bi bi-person-plus me-2 text-indigo-400"></i>Register</h3>
+                    <p class="text-slate-300 small mb-0">Create your MPOnline ATS Intelligence account</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-3 py-2 small text-center">@ViewBag.Error</div>
+                    }
+                    <form asp-action="Register" method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="FullName" class="form-control" placeholder="Jane Doe" required />
+                            <label asp-for="FullName">Full Name</label>
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" required />
+                            <label asp-for="Email">Email Address</label>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Password" class="form-control" type="password" placeholder="Password" required />
+                                    <label asp-for="Password">Password</label>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm" required />
+                                    <label asp-for="ConfirmPassword">Confirm Password</label>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-indigo btn-lg w-100 rounded-pill fw-bold">Register Now</button>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3 bg-light rounded-bottom-4 border-0">
+                    <span class="text-muted small">Already have an account? <a asp-action="Login" class="text-indigo-600 fw-bold">Sign In</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
