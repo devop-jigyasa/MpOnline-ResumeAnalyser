@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+<div class="container py-5">
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+        <h2 class="fw-bold mb-3"><i class="bi bi-shield-check text-indigo-600 me-2"></i>Privacy & Data Security</h2>
+        <p class="lead text-muted">MPOnline ResumeAnalyser is engineered with a strict privacy-first architecture.</p>
+        <hr class="my-4" />
+        <h5 class="fw-bold">Document Ingestion & In-Memory Processing</h5>
+        <p class="text-secondary">Uploaded resume files are processed in transient memory streams (`MemoryStream`) using PdfPig. Documents are not written to unencrypted local disk pools, avoiding disk storage leakage.</p>
+        <h5 class="fw-bold mt-4">Zero-Shot AI Safety</h5>
+        <p class="text-secondary">LLM inferences are conducted via stateless Google GenAI API calls. Personal information is only processed during active scoring sessions and is not used for external model retraining.</p>
+    </div>
+</div>

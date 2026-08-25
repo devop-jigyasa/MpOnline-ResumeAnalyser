@@ -1,0 +1,66 @@
+@{
+    ViewData["Title"] = "Job Description Matcher";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 bg-white">
+                <div class="card-header bg-dark-slate text-white text-center py-4 rounded-top-4 border-0">
+                    <h3 class="mb-1 fw-bold"><i class="bi bi-bullseye text-indigo-400 me-2"></i>Job Fit Analyzer</h3>
+                    <p class="text-slate-300 small mb-0">Cross-reference candidate skills directly against target job specifications</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-controller="Home" asp-action="AnalyzeJobMatch" method="post" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-file-earmark-pdf text-danger me-1"></i>1. Upload Resume (PDF)</label>
+                            <input type="file" name="resumeFile" class="form-control" accept=".pdf,.docx" required />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-card-text text-indigo-600 me-1"></i>2. Target Job Description</label>
+                            <textarea name="jobDescription" class="form-control" rows="6" placeholder="Paste the complete role description, required qualifications, and key responsibilities..." required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-indigo btn-lg px-5 rounded-pill fw-bold shadow-sm">
+                                <i class="bi bi-search me-2"></i>Analyze Match Fit
+                            </button>
+                        </div>
+
+                        <div id="loading-spinner" class="d-none text-center mt-4">
+                            <div class="spinner-border text-indigo-600" role="status"></div>
+                            <h6 class="mt-2 fw-bold text-secondary" id="loading-text">Extracting target skills...</h6>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const fileInput = form.querySelector('input[type="file"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const spinner = document.getElementById('loading-spinner');
+            const loadingText = document.getElementById('loading-text');
+
+            if (fileInput && fileInput.files.length > 0) {
+                if (fileInput.files[0].size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert("File size exceeds 5MB limit. Please upload a smaller file.");
+                    return;
+                }
+            }
+
+            if (submitBtn) submitBtn.classList.add('d-none');
+            if (spinner) spinner.classList.remove('d-none');
+
+            if (loadingText) {
+                setTimeout(() => loadingText.innerText = "Extracting target keywords from job description...", 1200);
+                setTimeout(() => loadingText.innerText = "Evaluating candidate match percentage...", 3000);
+                setTimeout(() => loadingText.innerText = "Finalizing gap analysis report...", 4500);
+            }
+        });
+    });
+</script>

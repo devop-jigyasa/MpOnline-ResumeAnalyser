@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "ATS Intelligence Portal";
+}
+
+<div class="py-5 text-center bg-white border-bottom mb-5 shadow-sm">
+    <div class="container py-3">
+        <span class="badge bg-indigo-600 text-white rounded-pill px-3 py-2 mb-3 shadow-sm">
+            <i class="bi bi-cpu me-1"></i> MPOnline ATS Intelligence Engine
+        </span>
+        <h1 class="display-4 fw-bold text-dark mb-3">
+            Optimize Your Resume with <span class="text-indigo-600">Gemini AI</span>
+        </h1>
+        <p class="lead text-muted mx-auto mb-4" style="max-width: 680px;">
+            Harness real-time ATS scoring, keyword verification, explainable AI rationale, and intelligent job description matching.
+        </p>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <div class="card shadow-lg border-0 rounded-4 mx-auto p-4" style="max-width: 580px;">
+                <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-up text-indigo-600 me-2"></i>Upload Candidate Resume</h5>
+                <form asp-controller="Home" asp-action="Upload" method="post" enctype="multipart/form-data">
+                    <div class="input-group mb-3">
+                        <input type="file" name="resumeFile" class="form-control" accept=".pdf,.docx" required />
+                    </div>
+                    <button type="submit" class="btn btn-indigo btn-lg w-100 rounded-pill fw-bold shadow-sm">
+                        <i class="bi bi-lightning-charge-fill me-2"></i>Run ATS Analysis
+                    </button>
+                </form>
+
+                <div id="loading-spinner" class="d-none text-center mt-4">
+                    <div class="spinner-border text-indigo-600" role="status"></div>
+                    <h6 class="mt-2 fw-bold text-secondary" id="loading-text">Extracting PDF structures...</h6>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-indigo btn-lg px-5 py-3 rounded-pill fw-bold shadow-sm">
+                    Get Started Free <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+                <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill">
+                    Create Account
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm shadow-hover h-100 p-4 rounded-4 bg-white">
+                <div class="fs-1 text-indigo-600 mb-3"><i class="bi bi-graph-up-arrow"></i></div>
+                <h5 class="fw-bold">ATS Scoring Engine</h5>
+                <p class="text-muted small">Evaluates keyword density, layout parsability, and structural completeness against top hiring systems.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm shadow-hover h-100 p-4 rounded-4 bg-white">
+                <div class="fs-1 text-indigo-600 mb-3"><i class="bi bi-patch-check"></i></div>
+                <h5 class="fw-bold">Substantiation Engine</h5>
+                <p class="text-muted small">Cross-verifies listed technical skills against actual project experience and quantitative achievements.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm shadow-hover h-100 p-4 rounded-4 bg-white">
+                <div class="fs-1 text-indigo-600 mb-3"><i class="bi bi-sliders"></i></div>
+                <h5 class="fw-bold">Responsible AI Rationale</h5>
+                <p class="text-muted small">Generates transparent scoring explanations and actionable recommendations without black-box bias.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const fileInput = form.querySelector('input[type="file"]');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const spinner = document.getElementById('loading-spinner');
+            const loadingText = document.getElementById('loading-text');
+
+            if (fileInput && fileInput.files.length > 0) {
+                if (fileInput.files[0].size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    alert("File size exceeds 5MB limit. Please upload a smaller document.");
+                    return;
+                }
+            }
+
+            if (submitBtn) submitBtn.classList.add('d-none');
+            if (spinner) spinner.classList.remove('d-none');
+
+            if (loadingText) {
+                setTimeout(() => loadingText.innerText = "Extracting text nodes with PdfPig...", 1200);
+                setTimeout(() => loadingText.innerText = "Querying Gemini AI ATS Evaluation Engine...", 3000);
+                setTimeout(() => loadingText.innerText = "Computing substantiation score matrix...", 4800);
+            }
+        });
+    });
+</script>
