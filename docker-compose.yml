@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  mponline-api:
+    build:
+      context: .
+      dockerfile: MpOnline.ResumeAnalyser.API/Dockerfile
+    container_name: mponline-resume-api
+    ports:
+      - "7202:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Gemini__ApiKey=${GEMINI_API_KEY:-YOUR_API_KEY_HERE}
+    networks:
+      - mponline-net
+
+  mponline-web:
+    build:
+      context: .
+      dockerfile: MpOnline.ResumeAnalyser.Web/Dockerfile
+    container_name: mponline-resume-web
+    ports:
+      - "7203:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiSettings__BaseUrl=http://mponline-api:8080/
+    depends_on:
+      - mponline-api
+    networks:
+      - mponline-net
+
+networks:
+  mponline-net:
+    driver: bridge
