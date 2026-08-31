@@ -6,42 +6,34 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="glass-panel p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <span class="p-3 rounded-circle bg-primary-light text-primary d-inline-flex mb-3 fs-3">
-                        <i class="bi bi-shield-lock-fill"></i>
-                    </span>
-                    <h3 class="fw-extrabold text-slate-900 mb-1">Welcome Back</h3>
-                    <p class="text-slate-500 small">Sign in to evaluate resumes on MPOnline Platform</p>
+            <div class="card card-modern shadow-lg border-0 rounded-4 mt-4 overflow-hidden">
+                <div class="card-header text-white text-center py-4 border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                    <h3 class="mb-1 fw-bold"><i class="bi bi-box-arrow-in-right text-primary me-2"></i> Welcome Back</h3>
+                    <p class="text-secondary small mb-0">Sign in to your MPOnline workspace</p>
                 </div>
-
-                @if (ViewBag.Error != null)
-                {
-                    <div class="alert alert-danger rounded-4 py-2 small text-center mb-4">
-                        <i class="bi bi-exclamation-circle-fill me-1"></i> @ViewBag.Error
-                    </div>
-                }
-
-                <form asp-action="Login" method="post">
-                    <div class="form-floating mb-3">
-                        <input asp-for="Email" class="form-control rounded-3" placeholder="name@example.com" value="admin@mponline.gov.in" required />
-                        <label asp-for="Email">Email Address</label>
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
-
-                    <div class="form-floating mb-4">
-                        <input asp-for="Password" class="form-control rounded-3" type="password" placeholder="Password" value="admin123" required />
-                        <label asp-for="Password">Password</label>
-                        <span asp-validation-for="Password" class="text-danger small"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-gradient-primary btn-lg w-100 rounded-pill fw-bold py-3">
-                        Sign In <i class="bi bi-arrow-right ms-2"></i>
-                    </button>
-                </form>
-
-                <div class="text-center mt-4 pt-3 border-top">
-                    <span class="text-slate-500 small">Don't have an account? <a asp-action="Register" class="text-primary fw-bold text-decoration-none">Create Account</a></span>
+                <div class="card-body p-4 p-md-5">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger rounded-3 py-2 small text-center mb-3">@ViewBag.Error</div>
+                    }
+                    <form asp-action="Login" method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control rounded-3" placeholder="name@example.com" value="admin@mponline.gov.in" required />
+                            <label asp-for="Email">Email Address</label>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <input asp-for="Password" class="form-control rounded-3" type="password" placeholder="Password" value="admin123" required />
+                            <label asp-for="Password">Password</label>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <button type="submit" class="btn btn-brand btn-lg w-100 rounded-pill fw-bold py-3 shadow-sm">
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3 bg-light border-0">
+                    <span class="text-muted small">Don't have an account? <a asp-action="Register" class="text-primary fw-bold text-decoration-none">Create Account</a></span>
                 </div>
             </div>
         </div>
