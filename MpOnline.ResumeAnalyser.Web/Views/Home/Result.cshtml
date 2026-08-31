@@ -20,203 +20,318 @@
 <div class="container py-4">
     @if (isValidJson)
     {
-        var name = root.TryGetProperty("candidate_name", out var n) ? n.GetString() : "Candidate";
-        var role = root.TryGetProperty("target_role", out var r) ? r.GetString() : "Target Role";
+        var name = root.TryGetProperty("candidate_name", out var n) ? (n.GetString() ?? "Candidate") : "Candidate";
+        var role = root.TryGetProperty("target_role", out var r) ? (r.GetString() ?? "Target Role") : "Target Role";
         var score = root.TryGetProperty("overall_ats_score", out var s) ? s.GetInt32() : 0;
+        var rationale = root.TryGetProperty("ai_decision_rationale", out var rat) ? (rat.GetString() ?? "Analysis complete.") : "Analysis complete.";
 
-        string badgeClass = score >= 80 ? "bg-success" : score >= 60 ? "bg-warning text-dark" : "bg-danger";
+        string verdictText = score >= 80 ? "Exceptional Match" : score >= 60 ? "Strong Candidate" : "Needs Optimization";
+        string verdictClass = score >= 80 ? "bg-emerald text-white" : score >= 60 ? "bg-amber text-dark" : "bg-rose text-white";
+        string strokeColor = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : "#f43f5e";
+        
+        double circumference = 251.3;
+        double offset = circumference - (circumference * score / 100.0);
 
-        <!-- Top Header Banner -->
-        <div class="card border-0 shadow-sm mb-4 bg-dark-slate text-white rounded-4">
-            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap">
-                <div>
-                    <span class="badge bg-indigo-600 mb-2 px-3 py-1 rounded-pill">Candidate Report</span>
-                    <h2 class="fw-bold mb-1">@name</h2>
-                    <p class="mb-0 text-slate-300 fs-5"><i class="bi bi-briefcase me-2"></i>@role</p>
+        <!-- Hidden Data Elements for JavaScript Handlers -->
+        <input type="hidden" id="candidateNameVal" value="@name" />
+        <input type="hidden" id="candidateRoleVal" value="@role" />
+        <input type="hidden" id="candidateScoreVal" value="@score" />
+        <input type="hidden" id="candidateVerdictVal" value="@verdictText" />
+        <textarea id="rawJsonData" class="d-none">@Model.AiFeedback</textarea>
+        <textarea id="rationaleData" class="d-none">@rationale</textarea>
+
+        <!-- Top Executive Candidate Banner -->
+        <div class="glass-dark text-white p-4 p-md-5 mb-4 position-relative overflow-hidden">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-4 mb-lg-0">
+                    <span class="badge bg-indigo-600 text-white rounded-pill px-3 py-2 mb-3">
+                        <i class="bi bi-patch-check-fill me-1"></i> Verified ATS Audit Report
+                    </span>
+                    <h1 class="display-5 fw-extrabold mb-1 tracking-tight text-white">@name</h1>
+                    <p class="fs-4 text-slate-300 mb-3"><i class="bi bi-briefcase-fill text-indigo-400 me-2"></i>@role</p>
+                    
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-pill small">
+                            <i class="bi bi-calendar3 me-1"></i> Generated: @DateTime.UtcNow.ToString("MMM dd, yyyy")
+                        </span>
+                        <span class="badge bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-pill small">
+                            <i class="bi bi-shield-fill-check text-emerald me-1"></i> Deterministic Zero-Shot Evaluation
+                        </span>
+                    </div>
                 </div>
-                <div class="text-center mt-3 mt-md-0">
-                    <span class="badge @badgeClass fs-3 px-4 py-2 rounded-pill shadow-sm">
-                        ATS Score: @score / 100
+
+                <!-- Animated SVG Score Gauge -->
+                <div class="col-lg-4 text-center">
+                    <div class="gauge-container mb-2">
+                        <svg class="gauge-svg" width="180" height="180" viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                            <circle class="gauge-meter" cx="50" cy="50" r="40"
+                                    stroke="@strokeColor"
+                                    stroke-dasharray="@circumference"
+                                    stroke-dashoffset="@offset"></circle>
+                        </svg>
+                        <div class="gauge-center-text">
+                            <div class="display-6 fw-extrabold text-white mb-0">@score</div>
+                            <div class="small text-slate-400 fw-semibold">OUT OF 100</div>
+                        </div>
+                    </div>
+                    <span class="badge @verdictClass px-3 py-2 rounded-pill fw-bold shadow-sm">
+                        @verdictText
                     </span>
                 </div>
             </div>
         </div>
 
-        <div class="alert alert-info mb-4 border-0 shadow-sm rounded-4 bg-white border-start border-4 border-indigo-600">
-            <h6 class="fw-bold text-indigo-600 mb-1"><i class="bi bi-lightbulb-fill me-2"></i>AI Decision Rationale:</h6>
-            <p class="mb-0 text-secondary">@(root.TryGetProperty("ai_decision_rationale", out var rationale) ? rationale.GetString() : "Analysis complete.")</p>
+        <!-- Action Toolbar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 p-3 bg-white rounded-4 border shadow-sm no-print">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-slate-700"><i class="bi bi-sliders text-primary me-2"></i>Export & Actions:</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button onclick="window.print()" class="btn btn-outline-dark btn-sm rounded-pill px-3 py-2 fw-semibold">
+                    <i class="bi bi-printer me-1"></i> Print / PDF
+                </button>
+                <button id="downloadJsonBtn" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-semibold">
+                    <i class="bi bi-filetype-json me-1"></i> Download JSON
+                </button>
+                <button id="copySummaryBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2 fw-semibold">
+                    <i class="bi bi-clipboard-check me-1"></i> Copy Summary
+                </button>
+                <a asp-action="Index" class="btn btn-gradient-primary btn-sm rounded-pill px-3 py-2">
+                    <i class="bi bi-arrow-repeat me-1"></i> Analyze Another
+                </a>
+            </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Score Breakdown -->
-            @if (root.TryGetProperty("score_breakdown", out var breakdown))
-            {
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                        <div class="card-header bg-white border-0 pt-4 pb-0">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-indigo-600 me-2"></i>Detailed Score Breakdown</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            @foreach (var prop in breakdown.EnumerateObject())
-                            {
-                                var label = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prop.Name.Replace("_", " "));
-                                var val = prop.Value.GetInt32();
-                                var barColor = val >= 80 ? "bg-success" : val >= 60 ? "bg-warning" : "bg-danger";
+        <!-- AI Decision Rationale Callout -->
+        <div class="glass-panel p-4 mb-4 border-start border-4 border-primary">
+            <div class="d-flex align-items-start gap-3">
+                <div class="p-2 bg-primary-light text-primary rounded-3 fs-4 mt-1">
+                    <i class="bi bi-lightbulb-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-slate-900 mb-1">AI Decision & Scoring Rationale</h5>
+                    <p class="text-slate-600 mb-0" style="font-size: 1.05rem; line-height: 1.6;">
+                        @rationale
+                    </p>
+                </div>
+            </div>
+        </div>
 
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span class="fw-medium text-secondary">@label</span>
-                                        <span class="fw-bold">@val%</span>
+        <!-- Tabbed Analytics Navigation -->
+        <ul class="nav nav-pills custom-nav-pills mb-4 no-print" id="resultTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="breakdown-tab" data-bs-toggle="pill" data-bs-target="#tab-breakdown" type="button">
+                    <i class="bi bi-bar-chart-fill me-2"></i>Score Breakdown
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="parsability-tab" data-bs-toggle="pill" data-bs-target="#tab-parsability" type="button">
+                    <i class="bi bi-check2-circle me-2"></i>Parsability Checklist
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="coaching-tab" data-bs-toggle="pill" data-bs-target="#tab-coaching" type="button">
+                    <i class="bi bi-rocket-takeoff-fill me-2"></i>Action Items
+                </button>
+            </li>
+            @if (root.TryGetProperty("unsubstantiated_skills", out var unsubSkills) && unsubSkills.GetArrayLength() > 0)
+            {
+                <li class="nav-item">
+                    <button class="nav-link text-amber" id="skills-tab" data-bs-toggle="pill" data-bs-target="#tab-skills" type="button">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Flagged Skills (@unsubSkills.GetArrayLength())
+                    </button>
+                </li>
+            }
+        </ul>
+
+        <!-- Tab Content Panes -->
+        <div class="tab-content">
+            <!-- TAB 1: Score Breakdown -->
+            <div class="tab-pane fade show active" id="tab-breakdown">
+                @if (root.TryGetProperty("score_breakdown", out var breakdown))
+                {
+                    <div class="row g-4">
+                        @foreach (var prop in breakdown.EnumerateObject())
+                        {
+                            var label = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prop.Name.Replace("_", " "));
+                            var val = prop.Value.GetInt32();
+                            var barColor = val >= 80 ? "bg-success" : val >= 60 ? "bg-warning" : "bg-danger";
+                            var tagLabel = val >= 80 ? "Exceptional" : val >= 60 ? "Acceptable" : "Action Needed";
+                            var tagBadge = val >= 80 ? "bg-success-subtle text-success" : val >= 60 ? "bg-warning-subtle text-warning" : "bg-danger-subtle text-danger";
+
+                            <div class="col-md-6">
+                                <div class="glass-panel p-4 h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold text-slate-800 mb-0">@label</h6>
+                                        <span class="badge @tagBadge rounded-pill px-3 py-1">@tagLabel</span>
                                     </div>
-                                    <div class="progress" style="height: 10px; border-radius: 8px;">
-                                        <div class="progress-bar @barColor" role="progressbar" style="width: @val%" aria-valuenow="@val" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="d-flex justify-content-between align-items-baseline mb-2">
+                                        <span class="text-slate-500 small">Weighted ATS benchmark</span>
+                                        <span class="fw-extrabold fs-4 text-slate-900">@val%</span>
+                                    </div>
+                                    <div class="progress" style="height: 12px; border-radius: 999px; background: #e2e8f0;">
+                                        <div class="progress-bar @barColor rounded-pill" role="progressbar" style="width: @val%" aria-valuenow="@val" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- TAB 2: Parsability Checklist -->
+            <div class="tab-pane fade" id="tab-parsability">
+                @if (root.TryGetProperty("ats_parsability_analysis", out var parsability))
+                {
+                    <div class="glass-panel p-4 p-md-5">
+                        <h5 class="fw-bold mb-4 text-slate-900"><i class="bi bi-file-earmark-check-fill text-primary me-2"></i>ATS Structure & Node Recognition</h5>
+                        <div class="row g-4">
+                            @foreach (var prop in parsability.EnumerateObject())
+                            {
+                                var itemLabel = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prop.Name.Replace("_", " "));
+                                var isOk = prop.Value.ValueKind == JsonValueKind.True || (prop.Value.ValueKind == JsonValueKind.String && prop.Value.GetString()?.ToLower() == "true");
+
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded-4 border d-flex align-items-center justify-content-between @(isOk ? "bg-white" : "bg-danger-subtle border-danger")">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="p-2 rounded-circle @(isOk ? "bg-success-subtle text-success" : "bg-danger text-white")">
+                                                <i class="bi @(isOk ? "bi-check-lg" : "bi-x-lg")"></i>
+                                            </span>
+                                            <span class="fw-semibold text-slate-800">@itemLabel</span>
+                                        </div>
+                                        <span class="badge @(isOk ? "bg-success text-white" : "bg-danger text-white") px-3 py-2 rounded-pill">
+                                            @(isOk ? "Detected" : "Missing / Unclear")
+                                        </span>
                                     </div>
                                 </div>
                             }
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
 
-            <!-- Parsability Overview -->
-            @if (root.TryGetProperty("ats_parsability_analysis", out var parsability))
+            <!-- TAB 3: Action Items & Coaching -->
+            <div class="tab-pane fade" id="tab-coaching">
+                @if (root.TryGetProperty("improvement_suggestions", out var suggestions) && suggestions.GetArrayLength() > 0)
+                {
+                    <div class="row g-3">
+                        @{ int idx = 1; }
+                        @foreach (var item in suggestions.EnumerateArray())
+                        {
+                            <div class="col-12">
+                                <div class="glass-panel p-4 d-flex align-items-start gap-3">
+                                    <span class="badge bg-indigo-600 text-white rounded-circle p-2 fs-6" style="width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
+                                        @idx
+                                    </span>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="badge bg-primary-light text-primary rounded-pill px-2 py-1 small fw-bold">High Impact Recommendation</span>
+                                        </div>
+                                        <p class="text-slate-800 fs-6 mb-0">@item.GetString()</p>
+                                    </div>
+                                </div>
+                            </div>
+                            idx++;
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- TAB 4: Unsubstantiated Skills -->
+            @if (root.TryGetProperty("unsubstantiated_skills", out var unsubs) && unsubs.GetArrayLength() > 0)
             {
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                        <div class="card-header bg-white border-0 pt-4 pb-0">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-check2-circle text-success me-2"></i>ATS Parsability Checklist</h5>
+                <div class="tab-pane fade" id="tab-skills">
+                    <div class="glass-panel p-4 p-md-5 border-start border-4 border-warning">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-2"></i>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-slate-900">Unsubstantiated Technical Proficiencies</h5>
+                                <p class="text-slate-500 small mb-0">These skills were listed in your skills section but lack quantifiable project proof.</p>
+                            </div>
                         </div>
-                        <div class="card-body p-4">
-                            <ul class="list-group list-group-flush">
-                                @foreach (var prop in parsability.EnumerateObject())
-                                {
-                                    var itemLabel = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prop.Name.Replace("_", " "));
-                                    var isOk = prop.Value.ValueKind == JsonValueKind.True || (prop.Value.ValueKind == JsonValueKind.String && prop.Value.GetString()?.ToLower() == "true");
-
-                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
-                                        <span class="text-secondary">@itemLabel</span>
-                                        @if (isOk)
-                                        {
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Detected</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Check Needed</span>
-                                        }
-                                    </li>
-                                }
-                            </ul>
-                        </div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var item in unsubs.EnumerateArray())
+                            {
+                                <li class="list-group-item bg-transparent border-0 px-0 py-3 text-slate-800 d-flex align-items-center">
+                                    <i class="bi bi-x-circle-fill text-warning me-3 fs-5"></i>
+                                    <span>@item.GetString()</span>
+                                </li>
+                            }
+                        </ul>
                     </div>
                 </div>
             }
-
-            <!-- Improvement Suggestions -->
-            @if (root.TryGetProperty("improvement_suggestions", out var suggestions) && suggestions.GetArrayLength() > 0)
-            {
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                        <div class="card-header bg-white border-0 pt-4 pb-0">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-arrow-up-right-circle text-primary me-2"></i>Recommended Improvements</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <ul class="list-group list-group-flush">
-                                @foreach (var item in suggestions.EnumerateArray())
-                                {
-                                    <li class="list-group-item border-0 px-0 py-2 text-secondary">
-                                        <i class="bi bi-chevron-right text-primary me-2"></i>@item.GetString()
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            <!-- Unsubstantiated Skills -->
-            @if (root.TryGetProperty("unsubstantiated_skills", out var unsubstantiated) && unsubstantiated.GetArrayLength() > 0)
-            {
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border-start border-4 border-warning">
-                        <div class="card-header bg-white border-0 pt-4 pb-0">
-                            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-exclamation-circle text-warning me-2"></i>Unsubstantiated Skills Flagged</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <ul class="list-group list-group-flush">
-                                @foreach (var item in unsubstantiated.EnumerateArray())
-                                {
-                                    <li class="list-group-item border-0 px-0 py-2 text-secondary">
-                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>@item.GetString()
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <div class="text-center mt-5">
-            <a asp-action="Index" class="btn btn-indigo btn-lg px-4 py-2 rounded-pill shadow-sm me-2">
-                <i class="bi bi-arrow-repeat me-2"></i>Analyze Another
-            </a>
-            <button onclick="window.print()" class="btn btn-outline-dark btn-lg px-4 py-2 rounded-pill shadow-sm me-2">
-                <i class="bi bi-printer me-2"></i>Print Report
-            </button>
-            <button id="downloadJsonBtn" class="btn btn-outline-secondary btn-lg px-4 py-2 rounded-pill shadow-sm">
-                <i class="bi bi-download me-2"></i>Download JSON
-            </button>
         </div>
 
         <script>
-            document.getElementById('downloadJsonBtn')?.addEventListener('click', function() {
-                const data = @Html.Raw(JsonSerializer.Serialize(Model.AiFeedback));
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'mponline_ats_report.json';
-                a.click();
-                URL.revokeObjectURL(url);
+            document.addEventListener('DOMContentLoaded', function() {
+                const downloadBtn = document.getElementById('downloadJsonBtn');
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', function() {
+                        const rawJson = document.getElementById('rawJsonData')?.value || '{}';
+                        const candidateName = document.getElementById('candidateNameVal')?.value || 'Candidate';
+                        const blob = new Blob([rawJson], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'MPOnline_ATS_Report_' + candidateName.replace(/\s+/g, '_') + '.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showGlobalToast('JSON report downloaded successfully!');
+                    });
+                }
+
+                const copyBtn = document.getElementById('copySummaryBtn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', function() {
+                        const name = document.getElementById('candidateNameVal')?.value || '';
+                        const role = document.getElementById('candidateRoleVal')?.value || '';
+                        const score = document.getElementById('candidateScoreVal')?.value || '';
+                        const verdict = document.getElementById('candidateVerdictVal')?.value || '';
+                        const rationale = document.getElementById('rationaleData')?.value || '';
+
+                        const text = 'Candidate: ' + name + '\nTarget Role: ' + role + '\nATS Score: ' + score + '/100 (' + verdict + ')\n\nAI Rationale: ' + rationale;
+                        navigator.clipboard.writeText(text).then(function() {
+                            showGlobalToast('Report summary copied to clipboard!');
+                        });
+                    });
+                }
             });
         </script>
     }
     else
     {
-        <!-- Markdown / Raw Output -->
-        <div class="card shadow-sm border-0 rounded-4 bg-white">
-            <div class="card-body p-4 p-md-5">
-                <h4 class="fw-bold text-dark mb-3"><i class="bi bi-file-text text-indigo-600 me-2"></i>Analysis Report</h4>
-                <div id="raw-markdown" class="d-none">@Model.AiFeedback</div>
-                <div id="formatted-output" class="bg-light p-4 rounded-4" style="font-size: 1.05rem; line-height: 1.6;"></div>
-                <div class="text-center mt-4">
-                    <a asp-action="JobMatch" class="btn btn-outline-primary rounded-pill px-4 me-2">Analyze Another Job</a>
-                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">Upload New Resume</a>
+        <!-- Markdown View for Job Matcher Output -->
+        <div class="glass-panel p-4 p-md-5">
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="p-2 bg-primary-light text-primary rounded-3 fs-4"><i class="bi bi-bullseye"></i></span>
+                    <div>
+                        <h4 class="fw-bold text-slate-900 mb-0">Job Fit & Keyword Gap Report</h4>
+                        <span class="text-slate-500 small">Gemini GenAI Comparative Analysis</span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="JobMatch" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
+                        <i class="bi bi-arrow-repeat me-1"></i> New Match
+                    </a>
                 </div>
             </div>
+
+            <div id="raw-markdown" class="d-none">@Model.AiFeedback</div>
+            <div id="formatted-output" class="p-4 bg-slate-50 rounded-4 border text-slate-800" style="font-size: 1.05rem; line-height: 1.7;"></div>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                var rawText = document.getElementById('raw-markdown').innerText;
-                document.getElementById('formatted-output').innerHTML = marked.parse(rawText);
+                const rawText = document.getElementById('raw-markdown')?.innerText || '';
+                const outEl = document.getElementById('formatted-output');
+                if (outEl && typeof marked !== 'undefined') {
+                    outEl.innerHTML = marked.parse(rawText);
+                }
             });
         </script>
     }
 </div>
-
-<style>
-    @@media print {
-        header, footer, nav, button, .btn {
-            display: none !important;
-        }
-        body {
-            background-color: white !important;
-        }
-        .card {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-        }
-    }
-</style>
